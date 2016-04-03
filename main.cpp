@@ -10,6 +10,19 @@
 
 using namespace std;
 
+// returns the number of students that can not see
+unsigned int cost_function(int* solution, int size){
+  unsigned int cost = 0;
+  unsigned int current = solution[0];
+  for(int i = 1 ; i < size ; i++){
+    if(solution[i] > current)
+      current = solution[i];
+    else
+      cost++;
+  }
+  return cost;
+}
+
 int main(int argc, char** argv){
   srand(time(0));
   default_random_engine generator;
@@ -97,61 +110,49 @@ int main(int argc, char** argv){
         hello = 0;
     }
   }
-  unsigned int* potentiel = new unsigned int[n_of_students];
-  memcpy(potentiel,solution,n_of_students*sizeof(unsigned int));
-  unsigned int retries = n_of_students;
-  while(retries--){
-    int a = rand() % n_of_students;
-    while(a == 0 || a == n_of_students-1)
-      a = rand() % n_of_students;
-    int b = rand() % n_of_students;
-    int restart = 0;
-    for(int i = 0 ; i < n_of_students ; i++)
-      if(students[potentiel[b]] > students[potentiel[a]]
-            || potentiel[b] < potentiel[a]
-            || b == n_of_students-1
-            || b == 0
-            || potentiel[b] == potentiel[a]){
-        b = rand() % n_of_students;
-        if(i == n_of_students-1)
-          restart = 1;
-      }
-      else
+  time_t current_time = time(0);
+  while(time(0)-current_time < 60){
+    unsigned int* potentiel = new unsigned int[n_of_students];
+    memcpy(potentiel,solution,n_of_students*sizeof(unsigned int));
+    unsigned int retries = n_of_students;
+    while(retries--){
+      unsigned int a = rand() % n_of_students;
+      while(a == 0 || a == n_of_students-1)
+        a = rand() % n_of_students;
+      unsigned int b = rand() % n_of_students;
+      int restart = 0;
+      for(int i = 0 ; i < n_of_students ; i++)
+        if(students[potentiel[b]] > students[potentiel[a]]
+              || potentiel[b] < potentiel[a]
+              || b == n_of_students-1
+              || b == 0
+              || potentiel[b] == potentiel[a]){
+          b = rand() % n_of_students;
+          if(i == n_of_students-1)
+            restart = 1;
+        }
+        else
+          break;
+
+      if(restart)
+        continue;
+
+      if( adjacency_matrix[potentiel[a]][potentiel[b-1]] == 1
+        && adjacency_matrix[potentiel[a]][potentiel[b+1]] == 1
+        && adjacency_matrix[potentiel[b]][potentiel[a-1]] == 1
+        && adjacency_matrix[potentiel[b]][potentiel[a+1]] == 1){
+        unsigned int temp = potentiel[a];
+        potentiel[a] = potentiel[b];
+        potentiel[b] = temp;
         break;
-
-    if(restart)
-      continue;
-
-    if( adjacency_matrix[potentiel[a]][potentiel[b-1]] == 1
-      && adjacency_matrix[potentiel[a]][potentiel[b+1]] == 1
-      && adjacency_matrix[potentiel[b]][potentiel[a-1]] == 1
-      && adjacency_matrix[potentiel[b]][potentiel[a+1]] == 1){
-      unsigned int temp = potentiel[a];
-      potentiel[a] = potentiel[b];
-      potentiel[b] = temp;
-//      break;
+      }
+    }
+    unsigned int cost = cost_function(solution,n_of_students);
+    unsigned int potentiel_cost = cost_function(potentiel,n_of_students);
+    if(cost > potentiel_cost){
+      memcpy(solution,potentiel,n_of_students*sizeof(unsigned int));
+      cout << cost << ":" << potentiel_cost << endl;
     }
   }
-  unsigned int cost = 0;
-  for(unsigned int i = 1 ; i < n_of_students ; i++){
-    if(students[solution[i]] < students[solution[i-1]]){
-      cost += 1;
-//      cout << solution[i] << endl;
-    }
-    if(adjacency_matrix[solution[i]][solution[i-1]] != 1)
-      cout << "error "<< solution[i] << ";" << solution[i-1] << endl;
-  }
-//  cout << "solution cost is :" << cost  << endl;
-
-  unsigned int potential_cost = 0;
-  for(unsigned int i = 1 ; i < n_of_students ; i++){
-    if(students[potentiel[i]] < students[potentiel[i-1]])
-      potential_cost += 1;
-    if(adjacency_matrix[potentiel[i]][potentiel[i-1]] != 1)
-      cout << "error potential" << endl;
-  }
-//  cout << "potentiel cost is :" << cost  << endl;
-  if(potential_cost != cost )
-    cout << cost << " " << potential_cost << endl;
   return 0;
 }
