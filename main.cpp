@@ -11,10 +11,11 @@
 
 using namespace std;
 
-int global_timeout = 180*3;
+
+int global_timeout = 60*60*4;
 // returns the number of students that can not see
 unsigned int cost_function(unsigned int* students,unsigned int* solution,unsigned  int size){
-  unsigned int cost = 0;
+  unsigned int cost = 1;
   unsigned int current = students[solution[0]];
   for(unsigned int i= 1 ; i < size ; i++){
     if(students[solution[i]] > current)
@@ -109,6 +110,7 @@ int main(int argc, char** argv){
         continue_looping = 0;
     }
   }
+  delete [] placed;
   {
     unsigned int *reverse = (unsigned int*)malloc(n_of_students*sizeof(unsigned int));
     for(unsigned int i= 0 ; i < n_of_students ; i++)
@@ -134,8 +136,8 @@ int main(int argc, char** argv){
       unsigned int b = (unsigned int)((double)rand()/RAND_MAX * n_of_students);
       int restart = 0;
       for(unsigned int i= 0 ; i < n_of_students ; i++)
-        if(students[potentiel[b]] < students[potentiel[a]]
-              || potentiel[b] < potentiel[a]
+        if(//students[potentiel[b]] < students[potentiel[a]]
+               potentiel[b] < potentiel[a]
               || b == 0
               || potentiel[b] == potentiel[a]){
           b = (unsigned int)((double)rand()/RAND_MAX * n_of_students);
@@ -154,7 +156,7 @@ int main(int argc, char** argv){
           unsigned int temp = potentiel[a];
           potentiel[a] = potentiel[b];
           potentiel[b] = temp;
-//          break;
+          break;
           }
       }
       else if(a == 0){
@@ -164,7 +166,7 @@ int main(int argc, char** argv){
           unsigned int temp = potentiel[a];
           potentiel[a] = potentiel[b];
           potentiel[b] = temp;
-//          break;
+          break;
         }
       }
       else if(b == n_of_students-1){
@@ -174,7 +176,7 @@ int main(int argc, char** argv){
           unsigned int temp = potentiel[a];
           potentiel[a] = potentiel[b];
           potentiel[b] = temp;
-//          break;
+          break;
         }
       }
       else if( a != 0 && b != n_of_students-1){
@@ -185,7 +187,7 @@ int main(int argc, char** argv){
           unsigned int temp = potentiel[a];
           potentiel[a] = potentiel[b];
           potentiel[b] = temp;
-//          break;
+          break;
         }
       }
     }
@@ -202,12 +204,13 @@ int main(int argc, char** argv){
 
     cost = cost_function(students,solution,n_of_students);
     //ankouc
-    if((((double)rand()/RAND_MAX)*global_timeout/(double)(potentiel_cost - cost) > probability*2 && potentiel_cost >= cost)
+    if(((double)rand()/RAND_MAX)*global_timeout/(double)(potentiel_cost - cost) > probability*1.5
       || cost > potentiel_cost)
       memcpy(solution,potentiel,n_of_students*sizeof(unsigned int));
 
-//    cout << cost << ":" << potentiel_cost << endl;
+    cout << cost << ":" << potentiel_cost << endl;
     probability = time(0) - current_time ;
+    delete [] potentiel;
 //    for(unsigned int i= 1 ;i < n_of_students ; i++)
 //      if( adjacency_matrix[solution[i]][solution[i-1]] != 1)
 //        cout << "==============" << endl;
