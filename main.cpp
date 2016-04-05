@@ -12,7 +12,7 @@
 using namespace std;
 
 
-int global_timeout = 60*60*4;
+int global_timeout = 60*3;//60*60;
 // returns the number of students that can not see
 unsigned int cost_function(unsigned int* students,unsigned int* solution,unsigned  int size){
   unsigned int cost = 1;
@@ -28,6 +28,7 @@ unsigned int cost_function(unsigned int* students,unsigned int* solution,unsigne
 
 int main(int argc, char** argv){
   srand(time(0));
+  time_t current_time = time(0);
   int verbose = 0;
   if(argc > 3)
     verbose = 1;
@@ -122,7 +123,6 @@ int main(int argc, char** argv){
     }
     free(reverse);
   }
-  time_t current_time = time(0);
   unsigned int probability = 0;
   unsigned int cost = cost_function(students,solution,n_of_students);
   while(time(0)-current_time < global_timeout){
@@ -131,7 +131,7 @@ int main(int argc, char** argv){
     unsigned int retries = n_of_students;
     while(retries--){
       unsigned int a = (unsigned int)((double) rand()/RAND_MAX * n_of_students);
-      while(a == n_of_students-1)
+      while(a >= n_of_students-1)
         a = (unsigned int)((double)rand()/RAND_MAX * n_of_students);
       unsigned int b = (unsigned int)((double)rand()/RAND_MAX * n_of_students);
       int restart = 0;
@@ -179,7 +179,7 @@ int main(int argc, char** argv){
           break;
         }
       }
-      else if( a != 0 && b != n_of_students-1){
+      else if( a > 0 && b < n_of_students-1){
         if( adjacency_matrix[potentiel[a]][potentiel[b-1]] == 1
           && adjacency_matrix[potentiel[a]][potentiel[b+1]] == 1
           && adjacency_matrix[potentiel[b]][potentiel[a-1]] == 1
@@ -205,15 +205,16 @@ int main(int argc, char** argv){
     cost = cost_function(students,solution,n_of_students);
     //ankouc
     if(((double)rand()/RAND_MAX)*global_timeout/(double)(potentiel_cost - cost) > probability*1.5
-      || cost > potentiel_cost)
+      // (double)rand()/RAND_MAX < 0.001
+      || cost >= potentiel_cost)
       memcpy(solution,potentiel,n_of_students*sizeof(unsigned int));
 
-    cout << cost << ":" << potentiel_cost << endl;
+    cout << cost << ":" << potentiel_cost << ":" << probability<< endl;
     probability = time(0) - current_time ;
     delete [] potentiel;
-//    for(unsigned int i= 1 ;i < n_of_students ; i++)
-//      if( adjacency_matrix[solution[i]][solution[i-1]] != 1)
-//        cout << "==============" << endl;
+    for(unsigned int i= 1 ;i < n_of_students ; i++)
+      if( adjacency_matrix[solution[i]][solution[i-1]] != 1)
+        cout << "==============" << endl;
   }
 
   cout << "nombre d etudiant qui peuvent voir " << n_of_students-cost << endl;
